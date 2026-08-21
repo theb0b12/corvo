@@ -1,0 +1,348 @@
+units:
+  units:
+  # kx and ky allow for easy- easi-er switching between MX and Choc.
+  kx: cx
+  ky: cy
+  px: kx + 2
+  py: ky + 2
+  starting_x: 140
+  starting_y: -150
+  w: 18
+  h: 17
+
+points:
+  zones:
+    matrix:
+      key:
+        padding: 1ky
+        spread: 1kx
+      anchor:
+        shift: [starting_x, starting_y]
+      columns:
+        c1:
+          key:
+            column_net: P1
+        c2:
+          key:
+            column_net: P0
+        c3:
+          key:
+            stagger: u/4
+            column_net: P2
+        c4:
+          key:
+            stagger: u/8
+            column_net: P3
+          rows.r4.skip: true
+        c5:
+          key:
+            stagger: -u/8
+            column_net: P4
+          rows.r4.skip: true
+        c6:
+          key:
+            stagger: -u/8
+            column_net: P5
+          rows.r4.skip: true
+      rows:
+        r4:
+          row_net: P6
+        r3:
+          row_net: P7
+        r2:
+          row_net: P8
+        r1:
+          row_net: P9
+    thumbfan:
+      anchor:
+        - ref: matrix_c4_r3
+          shift: [12,-25]
+      columns:
+        c4:
+          key:
+            column_net: P3
+        c5:
+          key:
+            splay: -15
+            stagger: -2.7
+            spread: u + 2
+            column_net: P4
+        c6:
+          key:
+            splay: 75
+            stagger: -3
+            spread: u + 2.5
+            column_net: P5
+      rows:
+        r0:
+          row_net: P9
+
+outlines:
+  keys:
+    - what: rectangle
+      where: true
+      size: [kx-0.5, ky-0.5]
+  _outline:
+    - what: polygon
+      operation: stack
+      fillet: 1
+      points:
+        - ref: matrix_c1_r1
+          shift: [-0.55px, 0.55py]
+        - ref: matrix_c2_r1
+          shift: [0.4px, 0.55py]
+        - ref: matrix_c2_r1
+          shift: [0.4px, 0.8py]
+        - ref: matrix_c2_r1
+          shift: [1.3px, 0.8py]
+        - ref: matrix_c2_r1
+          shift: [1.3px, 0.9py]
+        - ref: matrix_c2_r1
+          shift: [2.3px, 0.9py]
+        - ref: matrix_c2_r1
+          shift: [2.3px, 0.8py]
+        - ref: matrix_c2_r1
+          shift: [3.2px, 0.8py]
+        - ref: matrix_c2_r1
+          shift: [3.2px, 0.65py]
+        - ref: matrix_c2_r1
+          shift: [5.3px, 0.65py]
+          
+        - ref: matrix_c2_r1
+          shift: [5.3px, -2.85py]
+          
+        - ref: thumbfan_c6_r0
+          shift: [-0.55px, -0.55py]
+        - ref: thumbfan_c5_r0
+          shift: [0.45px, -0.55py]
+
+        - ref: thumbfan_c5_r0
+          shift: [-0.45px, -0.55py]
+        - ref: thumbfan_c4_r0
+          shift: [-0.55px, -0.55py]
+
+        - ref: thumbfan_c4_r0
+          shift: [-0.55px, 0.75py]
+        - ref: thumbfan_c4_r0
+          shift: [-0.95px, 0.75py]
+        - ref: thumbfan_c4_r0
+          shift: [-0.95px, -0.25py]
+
+          
+        - ref: matrix_c1_r4
+          shift: [1.45px, -0.3py]
+        - ref: matrix_c1_r4
+          shift: [1.45px, -0.55py]
+        - ref: matrix_c1_r4
+          shift: [-0.55px, -0.55py]
+
+  combo:
+    - name: _outline
+    - operation: stack
+      name: keys
+
+  
+
+  switch_plate_keys:
+    - what: rectangle
+      where: true
+      size: [kx-5.1,ky-5.1]
+
+  xlBoard:
+    - name: _outline
+      expand: 1.5
+
+  switch_plate:
+    - name: _outline
+    - operation: subtract
+      name: switch_plate_keys
+
+  _wall_outline:
+    - name: xlBoard
+    - operation: subtract
+      name: _outline
+
+
+pcbs:
+  corvo:
+    template: kicad8
+    outlines:
+      main:
+        outline: _outline
+    footprints:
+
+      choc_hotswap:
+        what: ceoloide/switch_choc_v1_v2
+        where: true
+        params:
+          hotswap: true
+          from: "{{column_net}}"
+          to: "{{colrow}}"
+
+          include_stabilizer_pad: false
+
+          reversible: true
+        adjust:
+          rotate: 180
+
+      diode:
+        what: smd
+        where: true
+        params:
+          from: "{{colrow}}"
+          to: "{{row_net}}"
+        adjust:
+          shift: [-5, 2]
+          rotate: 180
+        
+      encoder_diode:
+        what: smd
+        where: matrix_c6_r1
+        params:
+          from: "{{colrow}}"
+          to: "{{row_net}}"
+        adjust:
+          shift: [1kx, -2.3ky]
+
+      RGB:
+        what: ceoloide/led_sk6812mini-e
+        where: true
+        params:
+          P2: rgb
+          P4: rgb
+          reversible: true
+        adjust:
+          shift: [0, 5]
+
+      nicenano:
+        what: ceoloide/mcu_nice_nano
+        where:
+          ref: matrix_c6_r1
+          shift: [1.3kx, -0.38ky]
+        params:
+          reverse_mount: true
+          reversible: true
+
+      battery_connector:
+        what: ceoloide/battery_connector_jst_ph_2
+        where: matrix_c6_r2
+        params:
+          reversible: true
+        adjust:
+          shift: [0.85kx, -0.6ky]
+          rotate: -90
+
+      on_off_switch:
+        what: ceoloide/power_switch_smd_side
+        where: matrix_c6_r2
+        params:
+          from: BAT_P
+          to: RAW
+          reversible: true
+        adjust:
+          shift: [1.8kx, -0.7ky]
+
+      reset_switch:
+        what: ceoloide/reset_switch_smd_side
+        where: matrix_c6_r2
+        params:
+          from: "{{colrow}}"
+          to: GND
+          reversible: true
+        adjust:
+          shift: [1.8kx, -1.25ky]
+          rotate: -90
+
+      trrs:
+        what: ceoloide/trrs_pj320a
+        where: matrix_c6_r2
+        adjust:
+          shift: [1.85kx, -1.8ky]
+          rotate: -90
+        params:
+          reversible: true
+
+      encoder:
+        what: ceoloide/rotary_encoder_ec11_ec12
+        where: matrix_c6_r3
+        adjust:
+          shift: [1.2kx, -0.1ky]
+          rotate: -90
+        params:
+          reversible: true
+
+      oled:
+        what: ceoloide/display_ssd1306
+        where: matrix_c6_r2
+        adjust:
+          shift: [1.3kx, 0.4ky]
+        params:
+          reversible: true
+      
+      # hotswap_via:
+      #   what: via
+      #   where: true
+      #   params:
+      #     net: "{{column_net}}"
+      #   adjust:
+      #     shift: [-3, 6]
+
+      screwhole1:
+        what: ceoloide/mounting_hole_plated
+        where:
+          ref: [matrix_c1_r1]
+          shift: [0.45kx, -0.5ky]
+      
+      screwhole2:
+        what: ceoloide/mounting_hole_plated
+        where:
+          ref: [matrix_c1_r3]
+          shift: [0.45kx, -0.5ky]
+      
+      screwhole3:
+        what: ceoloide/mounting_hole_plated
+        where:
+          ref: [matrix_c5_r1]
+          shift: [0.45kx, -0.6ky]
+      
+      screwhole4:
+        what: ceoloide/mounting_hole_plated
+        where:
+          ref: [matrix_c4_r3]
+          shift: [0.45kx, -0.65ky]
+      
+      screwhole5:
+        what: ceoloide/mounting_hole_plated
+        where:
+          ref: [matrix_c6_r3]
+          shift: [0.45kx, -0.8ky]
+      
+      display-cover-hole1:
+        what: ceoloide/mounting_hole_npth
+        where:
+          ref: [matrix_c6_r3]
+          shift: [0.9kx, -0.9ky]
+      
+      display-cover-hole2:
+        what: ceoloide/mounting_hole_npth
+        where:
+          ref: [matrix_c6_r3]
+          shift: [1.6kx, -1.2ky]
+
+cases:
+  _wall:
+    - name: _wall_outline
+      extrude: 7
+  plate_tester:
+    - what: case
+      name: _wall
+    - name: switch_plate
+      shift: [0,0,5]
+      extrude: 2
+
+  case:
+    - what: case
+      name: _wall
+      operation: add
+    - name: xlBoard
+      operation: add
